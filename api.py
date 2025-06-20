@@ -21,7 +21,7 @@ app = FastAPI()
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,11 +34,27 @@ pkl_path = f"{cnn_name}_embeddings_and_indices.pkl"
 MIN_KNN_SIM = 0.93
 TOP_K = 5
 
-model = load_model(h5_model_path, compile=False)
-emb_model = Model(inputs=model.inputs, outputs=model.get_layer("embedding_layer").output)
+# Debug file presence
+print("📂 Current working directory:", os.getcwd())
+print("📄 Files available:", os.listdir())
 
-with open(pkl_path, "rb") as f:
-    data = pickle.load(f)
+try:
+    print(f"🟡 Attempting to load model: {h5_model_path}")
+    model = load_model(h5_model_path, compile=False)
+    emb_model = Model(inputs=model.inputs, outputs=model.get_layer("embedding_layer").output)
+    print("✅ Model loaded successfully.")
+except Exception as e:
+    print("❌ Failed to load model:", e)
+    raise e
+
+try:
+    print(f"🟡 Attempting to load embedding index: {pkl_path}")
+    with open(pkl_path, "rb") as f:
+        data = pickle.load(f)
+    print("✅ Embedding index loaded successfully.")
+except Exception as e:
+    print("❌ Failed to load .pkl file:", e)
+    raise e
 
 class_indices = data["class_indices"]
 records = data["records"]
